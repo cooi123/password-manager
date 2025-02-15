@@ -1,4 +1,4 @@
-package org.example;
+package org.example.encryption;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
@@ -8,25 +8,23 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
 
-public class EncryptionUtil {
-    private static final int IV_LENGTH = 12;           // 12 bytes for GCM recommended
-    private static final int GCM_TAG_LENGTH = 128;       // in bits
+public class AESEncryptionService implements EncryptionService {
 
-    /**
-     * Encrypts the given plaintext (e.g., a password) using AES-GCM.
-     *
-     * @param plaintext     The password to encrypt.
-     * @param encryptionKey The derived master key.
-     * @return Base64-encoded string containing IV and ciphertext.
-     * @throws Exception If encryption fails.
-     */
-    public static String encrypt(String plaintext, byte[] encryptionKey) throws Exception {
-        // Generate a random IV
+     private static final int IV_LENGTH = 12;           // 12 bytes for GCM recommended
+    private static final int GCM_TAG_LENGTH = 128;
+    private static final String ALGORITHM = "AES/GCM/NoPadding";
+    private final byte[] encryptionKey;
+    public AESEncryptionService(byte[] encryptionKey) {
+        this.encryptionKey = encryptionKey;
+    }
+
+    @Override
+    public String encrypt(String plaintext) throws Exception {
         byte[] iv = new byte[IV_LENGTH];
         new SecureRandom().nextBytes(iv);
 
         // Set up the cipher in encryption mode
-        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        Cipher cipher = Cipher.getInstance(ALGORITHM);
         SecretKeySpec keySpec = new SecretKeySpec(encryptionKey, "AES");
         GCMParameterSpec parameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
         cipher.init(Cipher.ENCRYPT_MODE, keySpec, parameterSpec);
@@ -43,15 +41,8 @@ public class EncryptionUtil {
         return Base64.getEncoder().encodeToString(ivAndCiphertext);
     }
 
-    /**
-     * Decrypts the given Base64-encoded ciphertext using AES-GCM.
-     *
-     * @param base64IvAndCiphertext The encrypted password data.
-     * @param encryptionKey         The derived master key.
-     * @return The decrypted plaintext password.
-     * @throws Exception If decryption fails.
-     */
-    public static String decrypt(String base64IvAndCiphertext, byte[] encryptionKey) throws Exception {
+    @Override
+    public String decrypt(String base64IvAndCiphertext) throws Exception {
         // Decode the Base64-encoded data
         byte[] ivAndCiphertext = Base64.getDecoder().decode(base64IvAndCiphertext);
 
