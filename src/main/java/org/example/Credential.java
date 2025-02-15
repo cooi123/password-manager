@@ -6,9 +6,9 @@ public class Credential {
     private String metadata;
 
 
-    public Credential(String username, String unencryptedPassword, String metadata, byte[] encryptionKey) throws Exception {
+    public Credential(String username, String encryptedPassword, String metadata) {
         this.username = username;
-        this.encryptedPassword = EncryptionUtil.encrypt(unencryptedPassword, encryptionKey);
+        this.encryptedPassword = encryptedPassword;
         this.metadata = metadata;
     }
 
